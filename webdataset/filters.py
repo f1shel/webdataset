@@ -300,11 +300,11 @@ def _decode(data, *args, handler=reraise_exception, **kw):
 decode = pipelinefilter(_decode)
 
 
-def _map(data, f, handler=reraise_exception):
+def _map(data, f, handler=reraise_exception, **kwargs):
     """Map samples."""
     for sample in data:
         try:
-            result = f(sample)
+            result = f(sample, **kwargs)
         except Exception as exn:
             if handler(exn):
                 continue
@@ -312,8 +312,8 @@ def _map(data, f, handler=reraise_exception):
                 break
         if result is None:
             continue
-        if isinstance(sample, dict) and isinstance(result, dict):
-            result["__key__"] = sample.get("__key__")
+        # if isinstance(sample, dict) and isinstance(result, dict):
+        #     result["__key__"] = sample.get("__key__")
         yield result
 
 
