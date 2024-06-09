@@ -1,7 +1,7 @@
 # %%
 import copy
 import sys
-from itertools import islice
+from itertools import islice, cycle
 
 from .pytorch import DataLoader, IterableDataset
 from .utils import PipelineStage
@@ -60,30 +60,20 @@ class DataPipeline(IterableDataset, PipelineStage):
     def iterator1(self):
         """Create an iterator through one epoch in the pipeline."""
         source = self.invoke(self.pipeline[0])
+        if self.nsamples > 0:
+            source = islice(cycle(source), self.nsamples)
         for step in self.pipeline[1:]:
             source = self.invoke(step, source)
         return source
 
     def iterator(self):
         """Create an iterator through the entire dataset, using the given number of repetitions."""
-        for _ in range(self.repetitions):
-            count = 0            
-            for sample in self.iterator1():
-                yield sample
-                count += 1
-            if count == 0:
-                # if the dataset is empty, don't keep looping
-                break
+        for sample in self.iterator1():
+            yield sample
 
     def __iter__(self):  # sourcery skip: merge-duplicate-blocks
         """Create an iterator through the pipeline, repeating and slicing as requested."""
-        if self.repetitions != 1:
-            if self.nsamples > 0:
-                return islice(self.iterator(), self.nsamples)
-            else:
-                return self.iterator()
-        else:
-            return self.iterator()
+        return self.iterator()
 
     def stage(self, i):
         """Return pipeline stage i."""
