@@ -21,9 +21,9 @@ setuptools.setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     # url="http://github.com/tmbdev/webdataset",
-    url="http://github.com/webdataset/webdataset",
-    author="Thomas Breuel",
-    author_email="tmbdev+removeme@gmail.com",
+    url="http://github.com/f1shel/webdataset",
+    author="Thomas Breuel; Xiang Feng",
+    author_email="tmbdev+removeme@gmail.com; xfeng.cg@gmail.com",
     license="MIT",
     classifiers=[
         "Development Status :: 3 - Alpha",
