@@ -42,6 +42,6 @@ setuptools.setup(
     packages=["webdataset", "wids"],
     python_requires=">=3.6",
     scripts=scripts,
-    install_requires="braceexpand numpy pyyaml".split(),
+    install_requires="braceexpand numpy<2.0 pyyaml".split(),
     license_files=["LICENSE"],
 )
