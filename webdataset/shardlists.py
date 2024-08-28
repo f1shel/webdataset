@@ -260,6 +260,62 @@ class ResampledShards(IterableDataset):
 ResampledShardList = ResampledShards
 
 
+class SequentialResampledShards(IterableDataset):
+    """An iterable dataset yielding a list of urls."""
+
+    def __init__(
+        self,
+        urls,
+        nshards=sys.maxsize,
+        seed=0,
+        worker_seed=None,
+        deterministic=False,
+        max_urls=int(1e6),
+        empty_check=True,
+    ):
+        """Sample shards from the shard list with replacement.
+
+        :param urls: a list of URLs as a Python list or brace notation string
+        """
+        super().__init__()
+        self.urls = expand_source(urls, max_urls)
+        if empty_check:
+            if len(self.urls) == 0:
+                raise ValueError("empty_check=True, but no shards found in ResampledShards")
+        assert isinstance(self.urls[0], str)
+        self.nshards = nshards
+        self.worker_seed = (
+            utils.pytorch_worker_seed if worker_seed is None else worker_seed
+        )
+        self.deterministic = deterministic
+        self.seed = seed
+        self.epoch = -1
+
+    def __iter__(self):
+        """Return an iterator over the shards."""
+        self.epoch += 1
+        if self.deterministic:
+            seed = utils.make_seed(self.worker_seed(), self.epoch, self.seed)
+        else:
+            seed = utils.make_seed(
+                self.worker_seed(),
+                self.epoch,
+                self.seed,
+                os.getpid(),
+                time.time_ns(),
+                os.urandom(4),
+            )
+        if os.environ.get("WDS_SHOW_SEED", "0") == "1":
+            print(f"# ResampledShards seed {seed}")
+        # self.rng = random.Random(seed)
+        for _ in range(self.nshards):
+            index = _ % len(self.urls) # self.rng.randint(0, len(self.urls) - 1)
+            yield dict(url=self.urls[index])
+
+
+SeqResampledShardList = SequentialResampledShards
+
+
 def check_pid_is_running(pid):
     """Check For the existence of a unix pid."""
     try:

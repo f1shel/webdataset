@@ -130,8 +130,8 @@ class WebDataset(DataPipeline, FluidInterface):
         seed=None,
     ):
         super().__init__()
-        if resampled:
-            mode = "resampled"
+        # if resampled:
+        #     mode = "resampled"
         if shardshuffle is None:
             warnings.warn("Webdataset(shardshuffle=...) is None; set explicitly to False or a number")
         if shardshuffle is True:
@@ -226,6 +226,8 @@ class WebDataset(DataPipeline, FluidInterface):
         if isinstance(args.urls, str) or utils.is_iterable(args.urls):
             if args.mode == "resampled":
                 self.append(shardlists.ResampledShardList(args.urls))
+            elif args.mode == "seq_resampled":
+                self.append(shardlists.SeqResampledShardList(args.urls))
             else:
                 self.append(shardlists.SimpleShardList(args.urls))
             return
